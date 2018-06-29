@@ -16,10 +16,14 @@
 
 package org.axonframework.samples.bank.config;
 
-import org.axonframework.commandhandling.SimpleCommandBus;
+import org.axonframework.commandhandling.AsynchronousCommandBus;
+import org.axonframework.commandhandling.CommandBus;
+import org.axonframework.common.transaction.NoTransactionManager;
+import org.axonframework.common.transaction.TransactionManager;
 import org.axonframework.config.SagaConfiguration;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.messaging.interceptors.BeanValidationInterceptor;
+import org.axonframework.messaging.interceptors.CorrelationDataInterceptor;
 import org.axonframework.samples.bank.command.BankAccount;
 import org.axonframework.samples.bank.command.BankAccountCommandHandler;
 import org.axonframework.samples.bank.command.BankTransferManagementSaga;
@@ -28,27 +32,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import java.util.concurrent.Executors;
 
 @Configuration
 public class AxonConfig {
 
-    @Autowired
-    private AxonConfiguration axonConfiguration;
-    @Autowired
-    private EventBus eventBus;
+  @Autowired
+  private AxonConfiguration axonConfiguration;
+  @Autowired
+  private EventBus eventBus;
 
-    @Bean
-    public BankAccountCommandHandler bankAccountCommandHandler() {
-        return new BankAccountCommandHandler(axonConfiguration.repository(BankAccount.class), eventBus);
-    }
+  @Bean
+  public BankAccountCommandHandler bankAccountCommandHandler() {
+    return new BankAccountCommandHandler(axonConfiguration.repository(BankAccount.class), eventBus);
+  }
 
-    @Bean
-    public SagaConfiguration bankTransferManagementSagaConfiguration() {
-        return SagaConfiguration.trackingSagaManager(BankTransferManagementSaga.class);
-    }
+  @Bean
+  public SagaConfiguration bankTransferManagementSagaConfiguration() {
+    return SagaConfiguration.trackingSagaManager(BankTransferManagementSaga.class);
+  }
 
-    @Autowired
-    public void configure(@Qualifier("localSegment") SimpleCommandBus simpleCommandBus) {
-        simpleCommandBus.registerDispatchInterceptor(new BeanValidationInterceptor<>());
-    }
+  @Autowired
+  public void configure(@Qualifier("localSegment") AsynchronousCommandBus commandBus) {
+    commandBus.registerDispatchInterceptor(new BeanValidationInterceptor<>());
+  }
+
+  @Primary
+  @Bean(destroyMethod = "shutdown")
+  @Qualifier("localSegment")
+  public AsynchronousCommandBus commandBus(
+    org.axonframework.config.Configuration config,
+    org.axonframework.spring.config.AxonConfiguration configuration) {
+    AsynchronousCommandBus commandBus = new AsynchronousCommandBus(
+      Executors.newCachedThreadPool(),
+      config.getComponent(TransactionManager.class, () -> NoTransactionManager.INSTANCE),
+      config.messageMonitor(CommandBus.class, "commandBus")
+    );
+    commandBus.registerHandlerInterceptor(new CorrelationDataInterceptor<>(configuration.correlationDataProviders()));
+    return commandBus;
+  }
 }
