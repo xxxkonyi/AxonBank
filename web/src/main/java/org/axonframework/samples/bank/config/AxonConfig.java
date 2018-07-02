@@ -16,17 +16,24 @@
 
 package org.axonframework.samples.bank.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.axonframework.commandhandling.AsynchronousCommandBus;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.common.transaction.NoTransactionManager;
 import org.axonframework.common.transaction.TransactionManager;
 import org.axonframework.config.SagaConfiguration;
 import org.axonframework.eventhandling.EventBus;
+import org.axonframework.eventhandling.interceptors.EventLoggingInterceptor;
 import org.axonframework.messaging.interceptors.BeanValidationInterceptor;
 import org.axonframework.messaging.interceptors.CorrelationDataInterceptor;
+import org.axonframework.messaging.interceptors.LoggingInterceptor;
 import org.axonframework.samples.bank.command.BankAccount;
 import org.axonframework.samples.bank.command.BankAccountCommandHandler;
 import org.axonframework.samples.bank.command.BankTransferManagementSaga;
+import org.axonframework.serialization.Serializer;
+import org.axonframework.serialization.json.JacksonSerializer;
 import org.axonframework.spring.config.AxonConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,6 +64,12 @@ public class AxonConfig {
   @Autowired
   public void configure(@Qualifier("localSegment") AsynchronousCommandBus commandBus) {
     commandBus.registerDispatchInterceptor(new BeanValidationInterceptor<>());
+    commandBus.registerHandlerInterceptor(new LoggingInterceptor<>());
+  }
+
+  @Autowired
+  public void configure(EventBus eventBus) {
+    eventBus.registerDispatchInterceptor(new EventLoggingInterceptor());
   }
 
   @Primary
@@ -72,5 +85,14 @@ public class AxonConfig {
     );
     commandBus.registerHandlerInterceptor(new CorrelationDataInterceptor<>(configuration.correlationDataProviders()));
     return commandBus;
+  }
+
+  @Primary
+  @Bean
+  public Serializer axonJacksonSerializer() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return new JacksonSerializer(objectMapper);
   }
 }

@@ -16,16 +16,22 @@
 
 package org.axonframework.samples.bank.api.bankaccount;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
-@Getter
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SourceBankAccountDebitedEvent extends MoneySubtractedEvent {
 
-    private String bankTransferId;
+  private String bankTransferId;
 
-    public SourceBankAccountDebitedEvent(String id, long amountOfMoney, String bankTransferId) {
-        super(id, amountOfMoney);
+  public SourceBankAccountDebitedEvent(String id, long amountOfMoney, String bankTransferId) {
+    super(id, amountOfMoney);
 
-        this.bankTransferId = bankTransferId;
-    }
+    this.bankTransferId = bankTransferId;
+  }
 }

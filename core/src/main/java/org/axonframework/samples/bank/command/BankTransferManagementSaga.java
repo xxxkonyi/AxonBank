@@ -16,6 +16,7 @@
 
 package org.axonframework.samples.bank.command;
 
+import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.callbacks.LoggingCallback;
 import org.axonframework.eventhandling.saga.EndSaga;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
 
 @Saga
+@NoArgsConstructor
 public class BankTransferManagementSaga {
 
     private transient CommandBus commandBus;

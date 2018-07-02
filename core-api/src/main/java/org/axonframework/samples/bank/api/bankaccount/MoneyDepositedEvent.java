@@ -16,9 +16,16 @@
 
 package org.axonframework.samples.bank.api.bankaccount;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
 public class MoneyDepositedEvent extends MoneyAddedEvent {
 
-    public MoneyDepositedEvent(String id, long amountOfMoneyDeposited) {
-        super(id, amountOfMoneyDeposited);
-    }
+  public MoneyDepositedEvent(String id, long amountOfMoneyDeposited) {
+    super(id, amountOfMoneyDeposited);
+  }
 }

@@ -16,11 +16,15 @@
 
 package org.axonframework.samples.bank.api.bankaccount;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
-@Value
-@NonFinal
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class MoneyAddedEvent {
 
     private String bankAccountId;

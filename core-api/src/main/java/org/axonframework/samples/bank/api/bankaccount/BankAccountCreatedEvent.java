@@ -16,9 +16,11 @@
 
 package org.axonframework.samples.bank.api.bankaccount;
 
-import lombok.Value;
+import lombok.*;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class BankAccountCreatedEvent {
 
     private String id;

@@ -16,9 +16,14 @@
 
 package org.axonframework.samples.bank.api.banktransfer;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class BankTransferCreatedEvent {
 
     private String BankTransferId;
